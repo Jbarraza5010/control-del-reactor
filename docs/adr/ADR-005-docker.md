@@ -7,14 +7,15 @@ La DoD exige que la aplicación arranque con `docker compose up` desde un clon l
 y la restricción RT-003 exige Docker para ejecutar y desplegar los componentes.
 
 ## Decisión
-- **Dockerfile multi-stage** (dependencias de producción + cliente Prisma, compilación, imagen final) sobre `node:20-bookworm-slim`, con usuario no root y `HEALTHCHECK` en `/health`.
+- **Dockerfile multi-stage** sobre `python:3.12-slim`: una etapa instala las dependencias en un entorno virtual y la imagen final solo copia el entorno y el código, con usuario no root y `HEALTHCHECK` en `/health`.
 - **docker-compose.yml** con `db` (postgres:16-alpine con healthcheck `pg_isready`), `backend` (espera a `db` saludable) y `adminer` (visor de BD, solo desarrollo).
 - Todas las variables tienen valor por defecto, así que no se necesita un archivo `.env` para arrancar. `.env.example` documenta lo que se puede cambiar.
-- El contenedor ejecuta `prisma migrate deploy` antes de iniciar el servidor.
+- El contenedor ejecuta `alembic upgrade head` antes de iniciar uvicorn.
+- Las dependencias están fijadas a versiones exactas en `requirements.txt` para que la imagen sea reproducible.
 - El cliente Godot y el simulador del panel se ejecutan fuera de Docker.
 
 ## Alternativas consideradas
-- **Alpine para el backend:** imagen más pequeña, pero Prisma necesita OpenSSL y bibliotecas que dan problemas en musl; `bookworm-slim` evita esos fallos.
+- **Base `python:3.12-alpine`:** imagen más pequeña, pero algunos paquetes con extensiones nativas (psycopg) dan problemas en musl; `slim` evita esos fallos.
 - **Ejecutar las migraciones como servicio aparte:** más puro, pero complica el Compose para el tamaño del proyecto.
 
 ## Consecuencias

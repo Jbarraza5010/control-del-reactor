@@ -4,7 +4,8 @@
 
 ## Contexto
 La arquitectura propuesta en la ERS (sección 7) incluye API Gateway, servidor de tiempo real (WebSocket), broker MQTT,
-caché Redis, balanceador de carga, Kubernetes y despliegue en un proveedor cloud. El Sprint 2 solo entrega cuentas,
+caché Redis, balanceador de carga, Kubernetes y despliegue en un proveedor cloud. La ERS aclara que la arquitectura es una guía
+"sin que ello implique que deba implementarse en su totalidad de forma inmediata". El Sprint 2 solo entrega cuentas,
 base de datos, Docker, CI y simulador del panel. Además, la ERS (UC-07) define que la partida la hospeda el dispositivo del anfitrión en red LAN.
 
 ## Decisión
