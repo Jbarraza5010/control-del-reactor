@@ -27,9 +27,8 @@ services:
       context: ./backend
     container_name: reactor-backend
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-reactor}:${POSTGRES_PASSWORD:-reactor}@db:5432/${POSTGRES_DB:-reactor}
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-reactor}:${POSTGRES_PASSWORD:-reactor}@db:5432/${POSTGRES_DB:-reactor}
       MAIL_TRANSPORT: ${MAIL_TRANSPORT:-console}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -37,7 +36,7 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       MAIL_FROM: ${MAIL_FROM:-Control del Reactor <no-reply@reactor.local>}
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy

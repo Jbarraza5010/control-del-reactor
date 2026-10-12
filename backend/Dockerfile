@@ -1,40 +1,27 @@
 # syntax=docker/dockerfile:1
 # Imagen del backend de Control del Reactor (multi-stage).
 
-# ---------- 1) Dependencias de producción + cliente Prisma generado ----------
-FROM node:20-bookworm-slim AS deps
-WORKDIR /app
-RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-COPY prisma ./prisma
-RUN npx prisma generate
+# ---------- 1) Instalar dependencias en un entorno virtual ----------
+FROM python:3.12-slim AS builder
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /build
+COPY requirements.txt .
+RUN python -m venv /opt/venv && /opt/venv/bin/pip install -r requirements.txt
 
-# ---------- 2) Compilación de TypeScript ----------
-FROM node:20-bookworm-slim AS build
+# ---------- 2) Imagen final ----------
+FROM python:3.12-slim AS runtime
+ENV PATH="/opt/venv/bin:$PATH" PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY tsconfig.json tsconfig.build.json ./
-COPY src ./src
-RUN npx tsc -p tsconfig.build.json
-
-# ---------- 3) Imagen final ----------
-FROM node:20-bookworm-slim AS runtime
-ENV NODE_ENV=production
-WORKDIR /app
-RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-COPY package.json ./
-COPY prisma ./prisma
+RUN useradd --system --create-home reactor
+COPY --from=builder /opt/venv /opt/venv
+COPY alembic.ini ./alembic.ini
+COPY alembic ./alembic
+COPY app ./app
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh \
-    && chown -R node:node /app
-USER node
-EXPOSE 3000
+    && chown -R reactor:reactor /app
+USER reactor
+EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=5 \
-  CMD node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
 ENTRYPOINT ["./docker-entrypoint.sh"]

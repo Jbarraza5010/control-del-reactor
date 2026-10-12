@@ -2,7 +2,7 @@
 set -e
 
 echo "[entrypoint] Aplicando migraciones de la base de datos..."
-npx prisma migrate deploy
+alembic upgrade head
 
 echo "[entrypoint] Iniciando backend..."
-exec node dist/server.js
+exec uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000
