@@ -23,3 +23,12 @@ mono_crash.*.json
 *.exe
 # Uncomment if your project does not version PCK files as runtime dependencies.
 # *.pck
+
+# Backend Python (Control del Reactor)
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.env
+*.db
