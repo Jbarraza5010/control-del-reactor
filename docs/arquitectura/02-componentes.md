@@ -7,14 +7,14 @@ flowchart LR
     SIM["Simulador de panel<br/>(Javier)"]
   end
 
-  subgraph Backend["Contenedor: backend (Node.js 20 + TypeScript + Express)"]
-    HTTP["API REST<br/>/health  /api/v1/auth"]
+  subgraph Backend["Contenedor: backend (Python 3.12 + FastAPI)"]
+    HTTP["API REST<br/>/health  /api/v1/auth  /docs"]
     AUTH["Módulo de cuentas<br/>(Moisés)"]
-    ERRS["Manejo de errores<br/>AppError + errorHandler"]
+    ERRS["Manejo de errores<br/>AppError + handlers"]
     BUS["EventBus<br/>(Observer)"]
     MAILF["MailerFactory<br/>(Factory)"]
     REPOS["Repositorios<br/>(Repository)"]
-    PRISMA["Prisma Client"]
+    SA["SQLAlchemy + Alembic"]
   end
 
   DB[("PostgreSQL 16")]
@@ -29,8 +29,8 @@ flowchart LR
   AUTH --> REPOS
   AUTH --> BUS
   BUS --> MAILF
-  REPOS --> PRISMA
-  PRISMA -->|"SQL"| DB
+  REPOS --> SA
+  SA -->|"SQL"| DB
   MAILF -->|"MAIL_TRANSPORT=smtp"| SMTP
   MAILF -->|"MAIL_TRANSPORT=console"| LOG
   ADM --> DB
