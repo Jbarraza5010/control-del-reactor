@@ -1,57 +1,40 @@
-# Control del Reactor - entorno local completo.
-# Uso:  docker compose up --build
-# Funciona desde un clon limpio: todos los valores tienen un default.
-name: control-del-reactor
-
 services:
   db:
     image: postgres:16-alpine
     container_name: reactor-db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-reactor}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reactor}
-      POSTGRES_DB: ${POSTGRES_DB:-reactor}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
-    restart: unless-stopped
 
-  backend:
-    build:
-      context: ./backend
-    container_name: reactor-backend
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-reactor}:${POSTGRES_PASSWORD:-reactor}@db:5432/${POSTGRES_DB:-reactor}
-      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-console}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      MAIL_FROM: ${MAIL_FROM:-Control del Reactor <no-reply@reactor.local>}
+  mail:
+    image: axllent/mailpit:latest
+    container_name: reactor-mail
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
+      - "1025:1025" # SMTP
+      - "8025:8025" # Bandeja web: http://localhost:8025
 
-  # Visor web de la base de datos (solo desarrollo): http://localhost:8080
-  adminer:
-    image: adminer:4
-    container_name: reactor-adminer
-    ports:
-      - "${ADMINER_PORT:-8080}:8080"
-    depends_on:
-      - db
-    restart: unless-stopped
+  # Descomentar cuando exista backend/Dockerfile
+  # backend:
+  #   build: ./backend
+  #   container_name: reactor-backend
+  #   env_file: .env
+  #   ports:
+  #     - "${BACKEND_PORT}:${BACKEND_PORT}"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     mail:
+  #       condition: service_started
 
 volumes:
-  pgdata:
+  db_data:
