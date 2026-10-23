@@ -37,4 +37,4 @@ El puente separa origen y destino detrás de interfaces (`LineSource`, `EventSin
 - (−) 9600 baudios es 12 veces más lento que 115200. Si en el futuro el panel envía mucho más tráfico (sensores continuos, varios paneles por un mismo cable), habrá que subir la velocidad en `arduino.ino` (`BAUD_RATE`) y en el puente (`--baud` o `HARDWARE_BAUD`) al mismo tiempo; si los dos lados no coinciden, el puente descarta todas las líneas.
 - (−) Hay un proceso más que ejecutar en la PC del jugador (el puente).
 - (−) El panel queda limitado por la longitud del cable.
-- Pendiente: implementar en el backend las rutas y la vinculación definidas en `hardware/PROTOCOL.md`, y que el puente llame a `announce` al recibir el `HELLO`.
+- Implementado: el backend expone las rutas, la vinculación y el WebSocket de `hardware/PROTOCOL.md`, el puente anuncia el panel al recibir el `HELLO` y el cliente Godot recibe los botones (`client/scripts/services/panel_hardware.gd`). Lo que sigue pendiente (token real del jugador, autenticación del puente y persistencia de los paneles) está en la sección "Pendientes" de `PROTOCOL.md`.

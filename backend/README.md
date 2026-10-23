@@ -31,6 +31,13 @@ El dominio no importa nada de FastAPI ni de SQLAlchemy.
 | Observer | `shared/events.py` (EventBus) + `application/services/register_mail_listeners.py` | Registrar un usuario dispara el correo sin acoplar ambos |
 | Inyección de dependencias | `container.py` | Único lugar que elige implementaciones concretas |
 
+## Panel físico (US-013)
+
+Rutas `/api/v1/hardware/*` y WebSocket `/api/v1/hardware/ws` para el panel de botones; el contrato está en
+[`hardware/PROTOCOL.md`](../hardware/PROTOCOL.md). Las rutas publican eventos en el `EventBus` y
+`presentation/api/hardware_hub.py` los reenvía por WebSocket solo al jugador dueño de cada panel.
+Mientras el login no emita tokens, `container.py` usa `DevPlayerIdentity` (el token es el id del jugador).
+
 ## Manejo de errores
 
 Las capas internas lanzan subclases de `AppError` (`ValidationAppError`, `ConflictError`, `UnauthorizedError`, `NotFoundError`...).

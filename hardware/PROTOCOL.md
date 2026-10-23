@@ -53,7 +53,7 @@ Reglas:
 
 ## Rutas del backend
 
-Prefijo común: `/api/v1/hardware`. Cuerpos en JSON. Los errores usan el formato uniforme del backend (ADR-006):
+Prefijo común: `/api/v1/hardware`. Cuerpos en JSON. El contrato también se ve en Swagger: http://localhost:8000/docs (sección **hardware**). Los errores usan el formato uniforme del backend (ADR-006):
 
 ```json
 { "error": { "code": "NOT_FOUND", "message": "Código de vinculación inválido o expirado" } }
@@ -67,6 +67,11 @@ Prefijo común: `/api/v1/hardware`. Cuerpos en JSON. Los errores usan el formato
 | `GET /api/v1/hardware/link` | Cliente | `Authorization: Bearer <token>` | Consultar el panel vinculado |
 | `DELETE /api/v1/hardware/link` | Cliente | `Authorization: Bearer <token>` | Desvincular el panel |
 | `GET /api/v1/hardware/ws` (WebSocket) | Cliente | `Authorization: Bearer <token>` en el handshake | Recibir los botones en tiempo real |
+
+> **Token mientras no exista el login (Sprint 2):** el backend usa una identificación de **desarrollo**
+> (`DevPlayerIdentity`): el token *es* el id del jugador, por ejemplo `Authorization: Bearer jugador-1`
+> (letras, números, `-` o `_`, hasta 64 caracteres). Cuando el login emita tokens reales, se reemplaza esa
+> clase en `backend/app/container.py` y nada más cambia: ni las rutas, ni el puente, ni el cliente.
 
 ### `POST /api/v1/hardware/devices/announce`
 
@@ -142,7 +147,7 @@ Respuesta `204` sin cuerpo. `404 NOT_FOUND` si el jugador no tiene panel vincula
 
 ### WebSocket `GET /api/v1/hardware/ws`
 
-El cliente abre la conexión con el token en el handshake (en Godot 4: `WebSocketPeer.handshake_headers`). Si el token no es válido, el servidor cierra con el código `4401`. El servidor solo envía mensajes; el cliente no necesita enviar nada.
+El cliente abre la conexión con el token en el handshake (en Godot 4: `WebSocketPeer.handshake_headers`). Para herramientas que no permiten encabezados (por ejemplo, el navegador) también se acepta `?token=<token>` en la URL. Si el token no es válido, el servidor cierra con el código `4401`. El servidor solo envía mensajes; el cliente no necesita enviar nada.
 
 Mensajes del servidor al cliente:
 
@@ -169,8 +174,21 @@ Dentro del backend, las rutas publican eventos en el `EventBus` (patrón Observe
 | `PanelUnlinked(device_id, player_id)` | `DELETE /link` | WebSocket → `device.unlinked` |
 | `HardwareButtonEvent(device_id, player_id, button, event, timestamp)` | `events` | WebSocket → `button` (y, en el Sprint 3, el motor de juego) |
 
+## Dónde está implementado
+
+| Pieza | Archivo |
+|---|---|
+| Rutas HTTP y WebSocket | `backend/app/presentation/api/routes/hardware.py` |
+| Reenvío de eventos a los WebSocket | `backend/app/presentation/api/hardware_hub.py` |
+| Reglas de vinculación (código, vencimiento, un panel por jugador) | `backend/app/application/services/hardware_panel_service.py` |
+| Entidad y repositorio del panel | `backend/app/domain/entities/hardware_panel.py`, `backend/app/infrastructure/persistence/memory/in_memory_hardware_panel_repository.py` |
+| Identificación del jugador (temporal) | `backend/app/application/ports/player_identity.py`, `backend/app/infrastructure/auth/dev_player_identity.py` |
+| Eventos internos | `backend/app/shared/events.py` |
+| Anuncio, código en consola y reanuncio | `hardware/bridge/reactor_bridge/service.py`, `registrar.py` |
+| Cliente Godot | `client/scripts/services/panel_hardware.gd` (botón "Detectar panel físico" en `client/scripts/HUD/panel_fisico.gd`) |
+
 ## Pendientes
 
+- **Token real del jugador:** `/link` y el WebSocket usan la identificación de desarrollo descrita arriba, que no verifica nada (cualquiera puede decir que es otro jugador). Cuando el login (US-005) emita tokens, agregar una implementación de `PlayerIdentity` que los valide y usarla en `backend/app/container.py`.
 - **Autenticación del puente:** en el Sprint 2, `announce` y `events` no piden credenciales, así que cualquiera en la red podría enviar eventos con un `deviceId` ajeno. Se acepta porque el entorno es local; para el despliegue en la nube (Sprint 5) hay que agregar un token por panel.
-- **Puente:** hoy solo llama a `events`. Falta que llame a `announce` al recibir el `HELLO`, muestre el código en consola y vuelva a anunciar ante un `404`.
-- **Backend:** las rutas de esta sección aún no existen.
+- **Paneles en memoria:** los paneles y sus vínculos viven en la memoria del backend. Si el backend se reinicia, el puente recibe `404`, vuelve a anunciar el panel y muestra un código nuevo, y el jugador debe vincularlo otra vez. Si se quiere conservar el vínculo, agregar una implementación SQL de `HardwarePanelRepository` con su migración de Alembic.

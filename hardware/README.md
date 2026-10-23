@@ -3,9 +3,11 @@
 Panel físico de 5 botones (arriba, abajo, izquierda, derecha, acción) que controla al jugador. Se conecta a la PC por **cable USB**.
 
 ```
-Botones → Arduino --USB serial--> Puente (PC) --POST JSON--> Backend
+Botones → Arduino --USB serial--> Puente (PC) --POST JSON--> Backend --WebSocket--> Juego (Godot)
                   Simulador --stdout--> Puente
 ```
+
+Los pasos para conectar todo están en [Conexión completa con el juego](#conexión-completa-con-el-juego).
 
 | Carpeta / archivo | Contenido |
 |---|---|
@@ -56,7 +58,7 @@ BTN ACTION release
 ### Qué hace el puente con cada línea
 
 1. La valida: una línea desconocida o un botón inválido se descarta y se registra una advertencia.
-2. Con `HELLO` guarda el `deviceId`.
+2. Con `HELLO` guarda el `deviceId`, anuncia el panel al backend y muestra en su consola el **código de vinculación** de 6 dígitos (ver [`PROTOCOL.md`](PROTOCOL.md)).
 3. Con `BTN` arma el mensaje JSON de `PROTOCOL.md` y le agrega `timestamp` (el Arduino no tiene reloj real).
 4. Lo envía al backend. Si el backend no responde, el puente sigue leyendo botones y registra el fallo.
 
@@ -127,7 +129,7 @@ pip install -r requirements-dev.txt
 | Caso | Comando |
 |---|---|
 | Arduino real, detectar el puerto solo | `python -m reactor_bridge` |
-| Arduino real, puerto fijo | `python -m reactor_bridge --port /dev/ttyACM0` (Windows: `--port COM3`) |
+| Arduino real, puerto fijo | Windows: `python -m reactor_bridge --port COM3` · Linux: `--port /dev/ttyACM0` |
 | Ver el JSON sin backend | `python -m reactor_bridge --sink stdout` |
 | Con el simulador | Ver la sección del simulador: se conecta con una tubería `\|` y `--source stdin` |
 
@@ -139,18 +141,21 @@ En Linux, el usuario debe pertenecer al grupo `dialout` para abrir `/dev/ttyACM0
 |---|---|---|
 | `--port` | `HARDWARE_SERIAL_PORT` | `auto` |
 | `--baud` | `HARDWARE_BAUD` | `9600` |
-| `--backend-url` | `HARDWARE_BACKEND_URL` | `http://localhost:8000/api/v1/hardware/events` |
+| `--backend-url` | `HARDWARE_BACKEND_URL` | `http://localhost:8000` (URL base del backend) |
 | `--device-id` | `HARDWARE_DEVICE_ID` | el que anuncia el Arduino (`HELLO`) |
 | `--source` | — | `serial` (`stdin` para el simulador) |
 | `--sink` | — | `http` (`stdout` para pruebas) |
-
-> La URL del backend es **provisional**: el endpoint de eventos de hardware aún no existe y su contrato se define en el Sprint 2 (`PROTOCOL.md`). Cuando se defina, solo hay que cambiar el valor por defecto o la variable de entorno.
 
 ### Comportamiento
 
 - Si se desconecta el cable USB, el puente reintenta abrir el puerto cada 2 s sin cerrarse.
 - El envío al backend va en un hilo aparte con un tiempo máximo de 0,4 s por mensaje, para cuidar la latencia objetivo (< 500 ms, RNF-02). Si el backend falla, el evento se descarta y se registra una advertencia; la lectura de botones continúa.
 - Las líneas inválidas del serial se descartan con una advertencia.
+- **Vinculación:** al recibir el `HELLO`, el puente anuncia el panel (`POST /devices/announce`) y muestra el código en un recuadro. Si el panel ya estaba vinculado, avisa que está listo para jugar.
+- Si el backend responde **404** a un botón (por ejemplo, porque se reinició), el puente vuelve a anunciar el panel y muestra un código nuevo.
+- Si responde **409** (panel sin vincular), recuerda el código cada 5 s como máximo; si el código ya venció, pide uno nuevo.
+- Si el backend no está corriendo al arrancar, el puente sigue leyendo botones y anuncia el panel en cuanto el backend responda.
+- Con `--sink stdout` no hay backend, así que tampoco hay vinculación.
 
 ### Estructura
 
@@ -159,6 +164,7 @@ En Linux, el usuario debe pertenecer al grupo `dialout` para abrir `/dev/ttyACM0
 | `bridge/reactor_bridge/protocol.py` | Interpreta las líneas del Arduino y arma el mensaje JSON |
 | `bridge/reactor_bridge/sources.py` | Origen de líneas: `SerialSource` (USB) y `StdinSource` (simulador) |
 | `bridge/reactor_bridge/sinks.py` | Destino: `HttpSink` (backend) y `StdoutSink` (pruebas) |
+| `bridge/reactor_bridge/registrar.py` | Anuncio del panel al backend (`HttpRegistrar`) |
 | `bridge/reactor_bridge/service.py` | Conecta origen → protocolo → destino |
 | `bridge/reactor_bridge/__main__.py` | Línea de comandos |
 
@@ -171,7 +177,7 @@ cd hardware/bridge
 pytest
 ```
 
-Incluyen una prueba de contrato que verifica que lo que emite el simulador es lo que entiende el puente.
+Incluyen una prueba de contrato que verifica que lo que emite el simulador es lo que entiende el puente, y pruebas de la vinculación contra un servidor HTTP local.
 
 ---
 
@@ -191,7 +197,16 @@ python simulador.py --interactive
 python simulador.py --demo
 ```
 
-Conectado al puente (Linux/macOS, desde `hardware/simulador`):
+Conectado al puente, desde `hardware/simulador` (quitar `--sink stdout` para enviar al backend):
+
+Windows (Símbolo del sistema, `cmd`; en la terminal de VS Code se abre escribiendo `cmd`):
+
+```
+set "PYTHONPATH=..\bridge"
+python simulador.py --interactive | python -m reactor_bridge --source stdin --sink stdout
+```
+
+Linux/macOS:
 
 ```
 python simulador.py --interactive | PYTHONPATH=../bridge python -m reactor_bridge --source stdin --sink stdout
@@ -220,3 +235,34 @@ Los mensajes de ayuda salen por stderr, así que la salida estándar solo contie
 ### Cuando llegue el Arduino real
 
 Solo cambia el origen: `python -m reactor_bridge` (sin `--source stdin`). El formato de los mensajes no cambia.
+
+---
+
+## Conexión completa con el juego
+
+Se necesitan tres programas abiertos a la vez: el backend, el puente y el juego. Con el simulador se puede probar todo sin el Arduino.
+
+1. **Backend**, desde la raíz del repositorio: `docker compose up --build`. Revisar http://localhost:8000/health.
+2. **Puente**, en otra terminal, desde `hardware/bridge` (con el entorno virtual activado):
+   - Con el Arduino: `python -m reactor_bridge` (o `--port COM3`). Cerrar antes el Monitor Serie del Arduino IDE.
+   - Sin el Arduino: usar el simulador conectado al puente (sección anterior), **sin** `--sink stdout`.
+
+   El puente muestra un recuadro con el código:
+
+   ```
+   ====================================================
+     CÓDIGO DE VINCULACIÓN DEL PANEL panel-01:  482915
+     Ingrésalo en el juego (vence a las 18:05).
+   ====================================================
+   ```
+3. **Juego:** abrir la escena del panel físico, presionar **Detectar panel físico** y escribir el código. Desde ese momento, los botones del panel mueven al jugador igual que el teclado (`client/scripts/services/panel_hardware.gd`).
+
+| Síntoma | Causa y solución |
+|---|---|
+| El puente dice "No se pudo anunciar el panel" | El backend no está corriendo. Levantarlo; el puente anuncia el panel en cuanto se presione un botón. |
+| El puente dice "Panel sin vincular: ingresa el código…" | Falta escribir el código en el juego, o se escribió mal. |
+| El juego dice "Código de vinculación inválido o expirado" | El código venció (5 minutos) o el puente ya mostró uno más nuevo. Usar el último código del puente. |
+| El puente muestra un código nuevo después de reiniciar el backend | Normal: el backend guarda los paneles en memoria. Volver a vincular con el código nuevo. |
+| El puente no encuentra el Arduino | Revisar el cable USB, cerrar el Monitor Serie y, en Windows, instalar el driver CH340 si la placa es un clon. Indicar el puerto con `--port COMx` (se ve en el Administrador de dispositivos). |
+| Ninguna línea llega al puente | La velocidad no coincide: el firmware y el puente deben usar 9600 baudios. |
+

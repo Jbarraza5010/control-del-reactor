@@ -2,7 +2,8 @@
 
 Quien publica (el servicio de cuentas) no conoce a quien escucha (el envío de correos),
 así se agregan reacciones nuevas sin modificar el servicio. En el Sprint 3 el mismo
-mecanismo propagará puntajes y ranking (ERS 7.3).
+mecanismo propagará puntajes y ranking (ERS 7.3). Los eventos del panel físico ya lo usan:
+las rutas de hardware publican y el WebSocket de los clientes escucha.
 """
 from collections import defaultdict
 from collections.abc import Callable
@@ -26,6 +27,34 @@ class PasswordResetRequested:
     user_id: str
     email: str
     reset_token: str
+
+
+# ---- Panel físico (US-013, hardware/PROTOCOL.md "Eventos internos del backend") ----
+@dataclass(frozen=True)
+class PanelAnnounced:
+    device_id: str
+    pairing_code: str | None  # None si el panel ya estaba vinculado
+
+
+@dataclass(frozen=True)
+class PanelLinked:
+    device_id: str
+    player_id: str
+
+
+@dataclass(frozen=True)
+class PanelUnlinked:
+    device_id: str
+    player_id: str
+
+
+@dataclass(frozen=True)
+class HardwareButtonEvent:
+    device_id: str
+    player_id: str
+    button: str  # UP, DOWN, LEFT, RIGHT o ACTION
+    event: str  # press o release
+    timestamp: int  # milisegundos, lo pone el puente
 
 
 E = TypeVar("E")
