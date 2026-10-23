@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ci0noquvdqlbi"]
 
-[ext_resource type="Script" uid="uid://bb6ng2x8f36xw" path="res://scripts/HUD/login.gd" id="1_klvag"]
+[ext_resource type="Script" uid="uid://cjo7enxd7cog3" path="res://scripts/HUD/registro.gd" id="1_701u5"]
 
 [node name="Login" type="Control" unique_id=1924561105]
 layout_mode = 3

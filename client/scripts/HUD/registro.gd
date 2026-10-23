@@ -10,7 +10,7 @@ extends Control
 
 func _ready() -> void:
 	boton_registrar.pressed.connect(_al_registrar)
-	boton_ir_login.pressed.connect(func(): Navegacion.ir_a("login"))
+	boton_ir_login.pressed.connect(func(): Navegacion.ir_a("auth/login"))
 	boton_volver.pressed.connect(func(): Navegacion.ir_a("entrada"))
 
 func _al_registrar() -> void:
@@ -34,6 +34,6 @@ func _al_registrar() -> void:
 	boton_registrar.disabled = false
 	
 	if response.ok:
-		Navegacion.ir_a("verificacion")
+		Navegacion.ir_a("auth/verificacion")
 	else:
 		mensaje.text = response.datos.get("mensaje", "Ocurrio un error.")

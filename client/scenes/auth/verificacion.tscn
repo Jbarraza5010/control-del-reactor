@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://87p7jyo3jksq"]
+
+[ext_resource type="Script" uid="uid://b7wfv8qa0it5d" path="res://scripts/HUD/verificacion.gd" id="1_mwkrh"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_8w0r3"]
+font_size = 11
+
+[node name="Verificacion" type="Control" unique_id=1972868285]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mwkrh")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1923072429]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4509804, 0.81960785, 0.65882355, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=2009642738]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1184761249]
+custom_minimum_size = Vector2(600, 0)
+custom_maximum_size = Vector2(500, -1)
+layout_mode = 2
+
+[node name="Titulo" type="Label" parent="CenterContainer/VBoxContainer" unique_id=789433479]
+layout_mode = 2
+text = "Codigo de verificacion"
+horizontal_alignment = 1
+
+[node name="TituloCodigo" type="Label" parent="CenterContainer/VBoxContainer" unique_id=992350869]
+layout_mode = 2
+text = "Se ha enviado un código a su correo para confirmar su identidad.Digitelo a continuación"
+label_settings = SubResource("LabelSettings_8w0r3")
+autowrap_mode = 2
+
+[node name="CampoCodigo" type="LineEdit" parent="CenterContainer/VBoxContainer" unique_id=55863551]
+layout_mode = 2
+placeholder_text = "Digitar código de un solo uso"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=50994223]
+layout_mode = 2
+
+[node name="BotonVolver" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=348894104]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Volver"
+
+[node name="BotonValidar" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=1239728442]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Validar"
+
+[node name="Mensaje" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1402821149]
+layout_mode = 2
