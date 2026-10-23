@@ -11,3 +11,4 @@ Cada ADR explica una decisión técnica y por qué se tomó. Formato: Contexto, 
 | [ADR-005](ADR-005-docker.md) | Docker multi-stage y Docker Compose con valores por defecto | Aceptada |
 | [ADR-006](ADR-006-manejo-de-errores.md) | Manejo de errores centralizado con AppError | Aceptada |
 | [ADR-007](ADR-007-alcance-arquitectura-ers.md) | Componentes de la ERS diferidos para después del Sprint 2 | Aceptada |
+| [ADR-008](ADR-008-conexion-hardware-usb-serial.md) | Panel físico por USB serial (9600 baudios) con un puente en la PC | Propuesta |
