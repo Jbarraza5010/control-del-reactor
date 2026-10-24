@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ci0noquvdqlbi"]
 
-[ext_resource type="Script" path="res://scripts/HUD/registro.gd" id="1_701u5"]
+[ext_resource type="Script" uid="uid://dsf3dgrdq4sic" path="res://scripts/HUD/registro.gd" id="1_701u5"]
 
 [node name="Registro" type="Control" unique_id=1924561105]
 layout_mode = 3
