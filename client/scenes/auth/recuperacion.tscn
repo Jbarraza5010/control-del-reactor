@@ -101,3 +101,4 @@ text = "Enviar contraseña al correo"
 [node name="LabelMensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=696970754]
 layout_mode = 2
 label_settings = SubResource("LabelSettings_h4t55")
+autowrap_mode = 1
