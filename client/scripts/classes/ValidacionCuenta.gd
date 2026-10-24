@@ -44,7 +44,7 @@ static func validar_correo(correo: String) -> String:
 static func validar_contrasena(contrasena: String) -> String:
 	# Validar si la contrasena no esta vacia
 	if contrasena.is_empty():
-		return "La contraseña es obligatoria."
+		return "La contraseña no puede estar vacia."
 	# Validar si la contrasena tiene menos del minimo de caracteres configurado
 	if contrasena.length() < CONTRASENA_MIN:
 		return "La contraseña debe tener al menos %d caracteres." % CONTRASENA_MIN
