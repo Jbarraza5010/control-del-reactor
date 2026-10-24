@@ -72,7 +72,7 @@ custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer" unique_id=2065746605]
+[node name="Titulo" type="Label" parent="CenterContainer/VBoxContainer" unique_id=2065746605]
 layout_mode = 2
 text = "Bienvenido a Control del Reactor"
 label_settings = SubResource("LabelSettings_h4t55")
@@ -81,21 +81,21 @@ horizontal_alignment = 1
 [node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=1423096673]
 layout_mode = 2
 
-[node name="login" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=829493728]
+[node name="BotonLogin" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=829493728]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_lqjpw")
 text = "Iniciar Sesión"
 
-[node name="registro" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=1211420498]
+[node name="BotonRegistro" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=1211420498]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_2x46s")
 text = "Registrarse"
 
-[node name="quit" type="Button" parent="CenterContainer/VBoxContainer" unique_id=378114274]
+[node name="BotonSalir" type="Button" parent="CenterContainer/VBoxContainer" unique_id=378114274]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_vjipu")
