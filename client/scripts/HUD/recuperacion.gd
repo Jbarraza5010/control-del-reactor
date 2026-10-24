@@ -1,11 +1,11 @@
 extends Node
 
-@onready var campo_correo: LineEdit = $CenterContainer/VBoxContainer/HBoxContainer/CampoCorreo
-@onready var boton_enviar_codigo: Button = $CenterContainer/VBoxContainer/HBoxContainer/BotonEnviarCodigo
-@onready var campo_codigo: LineEdit = $CenterContainer/VBoxContainer/CampoCodigo
-@onready var boton_volver: Button = $CenterContainer/VBoxContainer/HBoxContainer2/BotonVolver
-@onready var boton_validar: Button = $CenterContainer/VBoxContainer/HBoxContainer2/BotonValidar
-@onready var label_mensaje: Label = $CenterContainer/VBoxContainer/Mensaje
+@onready var campo_correo: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer/CampoCorreo
+@onready var boton_enviar_codigo: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer/BotonEnviarCodigo
+@onready var campo_codigo: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/CampoCodigo
+@onready var boton_volver: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer2/BotonVolver
+@onready var boton_validar: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer2/BotonValidar
+@onready var label_mensaje: Label = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/LabelMensaje
 
 var MOCKING := true
 var OTP : String

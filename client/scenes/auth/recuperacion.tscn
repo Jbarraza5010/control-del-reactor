@@ -98,6 +98,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Enviar contraseña al correo"
 
-[node name="Mensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=696970754]
+[node name="LabelMensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=696970754]
 layout_mode = 2
 label_settings = SubResource("LabelSettings_h4t55")
