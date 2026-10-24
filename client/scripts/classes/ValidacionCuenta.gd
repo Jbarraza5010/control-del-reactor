@@ -27,5 +27,15 @@ static func validar_usuario(usuario: String) -> String:
 		return "El usuario solo puede tener letras, números y guion bajo (_)."
 	return ""
 
-
-	
+# Validar correo (Al registrar)
+static func validar_correo(correo: String) -> String:
+	# Validar si el correo no esta vacio
+	if correo.is_empty():
+		return "El correo no puede estar vacio."
+	# 
+	var regex := RegEx.new()
+	# Formato de filtro para correos electronicos
+	regex.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+	if regex.search(correo) == null:
+		return "El correo tiene un formato inválido."
+	return ""
