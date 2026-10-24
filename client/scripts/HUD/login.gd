@@ -22,10 +22,10 @@ func _al_iniciar_sesion() -> void:
 		# correo: test@testing.com
 		# contraseña: 12345678
 		if campo_correo.text == "test@testing.com" and  campo_contrasena.text == "12345678":
-			mensaje.text = "Inicio de sesión exitoso. Redirigiendo"
+			label_mensaje.text = "Inicio de sesión exitoso. Redirigiendo"
 			await get_tree().create_timer(0.5).timeout
 			Navegacion.ir_a("mainmenu")
 		else:
-			mensaje.text = "Correo o contraseña incorrecta. Intente otra vez"
+			label_mensaje.text = "Correo o contraseña incorrecta. Intente otra vez"
 			
 		
