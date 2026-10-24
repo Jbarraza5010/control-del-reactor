@@ -1,12 +1,12 @@
 extends Control
 
-@onready var campo_usuario: LineEdit = $CenterContainer/VBoxContainer/CampoUsuario
-@onready var campo_correo: LineEdit = $CenterContainer/VBoxContainer/CampoCorreo
-@onready var campo_contrasena: LineEdit = $CenterContainer/VBoxContainer/CampoContrasena
-@onready var boton_registrar: Button = $CenterContainer/VBoxContainer/HBoxContainer/BotonRegistrar
-@onready var boton_volver: Button = $CenterContainer/VBoxContainer/HBoxContainer/BotonVolver
-@onready var boton_ir_login: Button = $CenterContainer/VBoxContainer/BotonIrLogin
-@onready var label_mensaje: Label = $CenterContainer/VBoxContainer/LabelMensaje
+@onready var campo_usuario: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/CampoUsuario
+@onready var campo_correo: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/CampoCorreo
+@onready var campo_contrasena: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/CampoContrasena
+@onready var boton_registrar: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer/BotonRegistrar
+@onready var boton_volver: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer/BotonVolver
+@onready var boton_ir_login: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/BotonIrLogin
+@onready var label_mensaje: Label = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/LabelMensaje
 
 func _ready() -> void:
 	boton_registrar.pressed.connect(_al_registrar)
