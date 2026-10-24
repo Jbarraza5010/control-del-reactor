@@ -1,12 +1,12 @@
 extends Control
 
-@onready var campo_correo: LineEdit = $CenterContainer/VBoxContainer/CampoCorreo
-@onready var campo_clave: LineEdit = $CenterContainer/VBoxContainer/CampoClave
-@onready var boton_ir_recuperacion: Button = $CenterContainer/VBoxContainer/BotonIrRecuperacion
-@onready var boton_volver: Button = $CenterContainer/VBoxContainer/HBoxContainer/BotonVolver
-@onready var boton_login: Button = $CenterContainer/VBoxContainer/HBoxContainer/BotonLogin
-@onready var boton_ir_registro: Button = $CenterContainer/VBoxContainer/BotonIrRegistro
-@onready var mensaje: Label = $CenterContainer/VBoxContainer/Mensaje
+@onready var campo_correo: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/CampoCorreo
+@onready var campo_contrasena: LineEdit = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/CampoContrasena
+@onready var boton_ir_recuperacion: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/BotonIrRecuperacion
+@onready var boton_volver: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer/BotonVolver
+@onready var boton_login: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer/BotonLogin
+@onready var boton_ir_registro: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/BotonIrRegistro
+@onready var label_mensaje: Label = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/LabelMensaje
 
 var MOCKING := true
 
@@ -21,7 +21,7 @@ func _al_iniciar_sesion() -> void:
 		# Asuma las credenciales:
 		# correo: test@testing.com
 		# contraseña: 12345678
-		if campo_correo.text == "test@testing.com" and  campo_clave.text == "12345678":
+		if campo_correo.text == "test@testing.com" and  campo_contrasena.text == "12345678":
 			mensaje.text = "Inicio de sesión exitoso. Redirigiendo"
 			await get_tree().create_timer(0.5).timeout
 			Navegacion.ir_a("mainmenu")

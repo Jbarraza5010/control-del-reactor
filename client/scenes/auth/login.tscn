@@ -68,11 +68,11 @@ text = "Correo electronico"
 layout_mode = 2
 placeholder_text = "Digite su correo electrónico"
 
-[node name="TituloClave" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=191650836]
+[node name="TituloContrasena" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=191650836]
 layout_mode = 2
 text = "Contraseña"
 
-[node name="CampoClave" type="LineEdit" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1428100937]
+[node name="CampoContrasena" type="LineEdit" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1428100937]
 layout_mode = 2
 placeholder_text = "Digite su contraseña"
 secret = true
@@ -98,7 +98,7 @@ text = "Iniciar sesión"
 layout_mode = 2
 text = "¿No tienes cuenta? Registrate aquí"
 
-[node name="Mensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1102229563]
+[node name="LabelMensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1102229563]
 layout_mode = 2
 label_settings = SubResource("LabelSettings_8wugm")
 autowrap_mode = 1
