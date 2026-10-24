@@ -17,11 +17,20 @@ func _ready() -> void:
 	boton_ir_registro.pressed.connect(func(): Navegacion.ir_a("auth/registro"))
 	
 func _al_iniciar_sesion() -> void:
+	# Validaciones de campos no vacíos
+	var correo := campo_correo.text.strip_edges()
+	var contrasena := campo_contrasena.text
+	
+	if ValidacionCuenta.validar_login(correo, contrasena) != "":
+		label_mensaje.text = ValidacionCuenta.validar_login(correo, contrasena)
+	
+	
+	
 	if MOCKING:
 		# Asuma las credenciales:
 		# correo: test@testing.com
 		# contraseña: 12345678
-		if campo_correo.text == "test@testing.com" and  campo_contrasena.text == "12345678":
+		if correo == "test@testing.com" and  contrasena == "12345678":
 			label_mensaje.text = "Inicio de sesión exitoso. Redirigiendo"
 			await get_tree().create_timer(0.5).timeout
 			Navegacion.ir_a("mainmenu")
