@@ -6,23 +6,36 @@ font_size = 20
 [sub_resource type="LabelSettings" id="LabelSettings_h4t55"]
 font_size = 25
 
-[node name="DatoEstadistica" type="VBoxContainer" unique_id=741568416]
+[node name="DatoEstadistica" type="ColorRect" unique_id=1870040779]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
-alignment = 1
+color = Color(0, 0, 0, 0.6862745)
 
-[node name="Titulo" type="Label" parent="." unique_id=1166151224]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1068666006]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=82914176]
 layout_mode = 2
+
+[node name="Titulo" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1166151224]
+layout_mode = 2
+size_flags_vertical = 6
 text = "title"
 label_settings = SubResource("LabelSettings_8w0r3")
 horizontal_alignment = 1
 
-[node name="Valor" type="Label" parent="." unique_id=1493934207]
+[node name="Valor" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1493934207]
 layout_mode = 2
+size_flags_vertical = 6
 text = "value"
 label_settings = SubResource("LabelSettings_h4t55")
 horizontal_alignment = 1
