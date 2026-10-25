@@ -1,8 +1,8 @@
 extends Control
 
-@onready var boton_ir_login: Button =  $CenterContainer/VBoxContainer/HBoxContainer/login
-@onready var boton_ir_registro: Button = $CenterContainer/VBoxContainer/HBoxContainer/registro
-@onready var boton_quit: Button = $CenterContainer/VBoxContainer/quit
+@onready var boton_ir_login: Button =  $CenterContainer/VBoxContainer/HBoxContainer/BotonLogin
+@onready var boton_ir_registro: Button = $CenterContainer/VBoxContainer/HBoxContainer/BotonRegistro
+@onready var boton_quit: Button = $CenterContainer/VBoxContainer/BotonSalir
 
 func _ready() -> void:
 	boton_ir_login.pressed.connect(func(): Navegacion.ir_a("auth/login"))
