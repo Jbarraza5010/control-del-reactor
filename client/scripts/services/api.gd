@@ -1,42 +1,45 @@
 extends Node
 
-const DIRECCION := "http://localhost:3000" #Direccion de envio de datos
-const MOCKING := true #Para enviar datos de prueba.
+const URL := "http://localhost:8000" # Direccion del servidor
+const TIMEOUT_SEG := 10.0 # Tiempo de respuesta máximo en segundos
 
-var token := "" #Dato de inicio de sesion
-
-func enviar(method: int, path: String, body: Dictionary = {}) -> Dictionary:
-	if MOCKING: #Evalua si MOCKING = true para retornar datos de prueba
-		return {
-			"ok":true,
-			"codigo":123,
-			"dato": {"mensaje": "MENSAJE DE PRUEBA"}
-			}
-	else:
-		return {}
-	
+# Envío de datos al servidor
+func post_json(path: String, body: Dictionary) -> Dictionary:
 	var http := HTTPRequest.new()
-	add_child(http) #Agregarlo como hijo permite que se ejecute la peticion
-	var header := ["Content-Type: application/json"] #Header del HTTP request
-	if token != "":
-		header.append("Authorization: Bearer " + token)
-		
-	var error := http.request(DIRECCION + path, header, method, JSON.stringify(body)) #Envio de la peticion HTTP
-	if error != OK: #Validar si hubo error en el envio, si es asi, se descarta la peticion y se retorna un mensaje de error
+	http.timeout = TIMEOUT_SEG
+	add_child(http)
+
+	var err := http.request(
+		URL + path,
+		["Content-Type: application/json"],
+		HTTPClient.METHOD_POST,
+		JSON.stringify(body)
+	)
+	if err != OK:
 		http.queue_free()
-		return {
-			"ok": false,
-			"codigo": 0,
-			"dato": {"mensaje": "No se pudo conectar con el servidor"}
-			}
-	
-	var response = await http.request_completed #Formato de respuesta: [resultado, codigo, header, body]
+		return _error_red()
+
+	var res: Array = await http.request_completed   # [result, status, headers, body]
 	http.queue_free()
-	var datos = JSON.parse_string(response[3].get_string_from_utf8()) #Extraccion de datos del body
-	if datos == null:
-		datos = {}
+
+	if res[0] != HTTPRequest.RESULT_SUCCESS:
+		return _error_red()
+
+	var status: int = res[1]
+	var parsed = JSON.parse_string((res[3] as PackedByteArray).get_string_from_utf8())
+	var data: Dictionary = parsed if parsed is Dictionary else {}
+
+	if status >= 200 and status < 300:
+		return {"ok": true, "status": status, "data": data}
 	return {
-		"ok": response[1] >= 200 and response[1] < 300,
-		"codigo": response[1],
-		"dato": datos
-		}
+		"ok": false,
+		"status": status,
+		"error": data.get("error", {"code": "UNKNOWN", "message": "Error inesperado del servidor"}),
+	}
+
+func _error_red() -> Dictionary:
+	return {
+		"ok": false,
+		"status": 0,
+		"error": {"code": "NETWORK_ERROR", "message": "No se pudo conectar con el servidor"},
+	}
