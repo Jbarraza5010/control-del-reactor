@@ -32,3 +32,7 @@ venv/
 .pytest_cache/
 .env
 *.db
+
+# PlatformIO (firmware del panel)
+.pio/
+hardware/firmware/.vscode/

@@ -30,7 +30,7 @@ struct Button {
 };
 
 static Button buttons[] = {
-  {"UP",     2, false, false, 0},
+  {"UP",     7, false, false, 0},
   {"DOWN",   3, false, false, 0},
   {"LEFT",   4, false, false, 0},
   {"RIGHT",  5, false, false, 0},
