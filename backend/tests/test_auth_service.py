@@ -1,8 +1,7 @@
-"""Pruebas unitarias y de integración SQL de AuthService (US-001 a US-007)."""
+"""Pruebas unitarias y de integración SQL de AuthService (US-001 a US-008)."""
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import select
 
 from app.application.services.auth_service import AuthService, hash_token
 from app.infrastructure.auth.dev_player_identity import DevPlayerIdentity
@@ -10,7 +9,11 @@ from app.infrastructure.persistence.memory.in_memory_auth_token_repository impor
     InMemoryAuthTokenRepository,
 )
 from app.infrastructure.persistence.memory.in_memory_user_repository import InMemoryUserRepository
-from app.infrastructure.persistence.sql.models import PerfilJugadorModel
+from app.infrastructure.persistence.sql.models import (
+    ParticipacionModel,
+    PartidaModel,
+    PerfilJugadorModel,
+)
 from app.shared.errors import (
     ConflictError,
     ForbiddenError,
@@ -165,3 +168,57 @@ def test_forgot_password_de_correo_inexistente_es_404():
     with pytest.raises(NotFoundError):
         service.forgot_password("noexiste@tec.ac.cr")
 
+
+def test_perfil_sql_calcula_partidas_ganadas_y_puntos(sql_repository, sql_token_repository, sql_session_factory):
+    service, _, _, _, _ = make_service(users=sql_repository, tokens=sql_token_repository)
+    user = service.register("Capitan_1", "capitan@tec.ac.cr", "Clave1234")
+    service.verify_email("123456")
+    sesion = service.login("capitan@tec.ac.cr", "Clave1234")
+
+    perfil_inicial = service.get_profile_by_token(sesion.token)
+    assert perfil_inicial.username == "Capitan_1"
+    assert (perfil_inicial.matches_played, perfil_inicial.matches_won, perfil_inicial.total_points) == (0, 0, 0)
+
+    with sql_session_factory.begin() as session:
+        session.add_all(
+            [
+                PartidaModel(
+                    id="m1",
+                    escenario="central",
+                    modo="todos",
+                    estado="FINALIZADA",
+                    limite_segundos=60,
+                    puntuacion_objetivo=100,
+                    started_at=T0,
+                    ended_at=T0 + timedelta(minutes=1),
+                ),
+                PartidaModel(
+                    id="m2",
+                    escenario="central",
+                    modo="todos",
+                    estado="FINALIZADA",
+                    limite_segundos=60,
+                    puntuacion_objetivo=100,
+                    started_at=T0,
+                    ended_at=T0 + timedelta(minutes=1),
+                ),
+                PartidaModel(
+                    id="m3",
+                    escenario="central",
+                    modo="todos",
+                    estado="EN_CURSO",
+                    limite_segundos=60,
+                    puntuacion_objetivo=100,
+                    started_at=T0,
+                ),
+                ParticipacionModel(partida_id="m1", jugador_id=user.id, puntuacion=120, posicion=1),
+                ParticipacionModel(partida_id="m2", jugador_id=user.id, puntuacion=80, posicion=2),
+                ParticipacionModel(partida_id="m3", jugador_id=user.id, puntuacion=500, posicion=1),
+            ]
+        )
+
+    perfil = service.get_profile_by_token(sesion.token)
+    assert perfil.username == "Capitan_1"
+    assert perfil.matches_played == 2
+    assert perfil.matches_won == 1
+    assert perfil.total_points == 200

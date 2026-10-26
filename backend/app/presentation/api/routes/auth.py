@@ -3,13 +3,17 @@
 - US-004         -> POST /api/v1/auth/verify-email
 - US-005         -> POST /api/v1/auth/login
 - US-007         -> POST /api/v1/auth/forgot-password y POST /api/v1/auth/reset-password
+- US-008         -> GET  /api/v1/auth/profile
 """
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Header
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from app.container import Container
 from app.domain.entities.user import User
 from app.presentation.api.dependencies import get_container
+from app.shared.errors import UnauthorizedError
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -112,6 +116,13 @@ class MessageResponse(_AuthModel):
     message: str
 
 
+class ProfileResponse(_AuthModel):
+    nombre_usuario: str
+    partidas_jugadas: int
+    partidas_ganadas: int
+    puntos_totales: int
+
+
 def _user_response(user: User, message: str) -> UserResponse:
     return UserResponse(
         id=user.id,
@@ -120,6 +131,15 @@ def _user_response(user: User, message: str) -> UserResponse:
         status=user.status,
         message=message,
     )
+
+
+def _extract_bearer_token(authorization: str | None) -> str:
+    if not authorization:
+        raise UnauthorizedError("Falta el token de sesión")
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise UnauthorizedError("Usa el encabezado 'Authorization: Bearer <token>'")
+    return token.strip()
 
 
 @router.post(
@@ -202,3 +222,23 @@ def reset_password(
 ) -> MessageResponse:
     container.auth_service.reset_password(body.code, body.new_password, body.email)
     return MessageResponse(message="Contraseña actualizada exitosamente.")
+
+
+@router.get(
+    "/profile",
+    status_code=200,
+    response_model=ProfileResponse,
+    summary="Consultar perfil y estadísticas del jugador autenticado (US-008)",
+)
+def get_profile(
+    authorization: Annotated[str | None, Header()] = None,
+    container: Container = Depends(get_container),
+) -> ProfileResponse:
+    token = _extract_bearer_token(authorization)
+    profile = container.auth_service.get_profile_by_token(token)
+    return ProfileResponse(
+        nombre_usuario=profile.username,
+        partidas_jugadas=profile.matches_played,
+        partidas_ganadas=profile.matches_won,
+        puntos_totales=profile.total_points,
+    )

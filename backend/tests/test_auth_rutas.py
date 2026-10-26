@@ -19,7 +19,7 @@ def app_and_events():
     return client, events
 
 
-def test_flujo_completo_registro_verificacion_login_y_recuperacion(app_and_events):
+def test_flujo_completo_registro_verificacion_login_perfil_y_recuperacion(app_and_events):
     client, events = app_and_events
 
     # 1. Registro (acepta campos en inglés o español)
@@ -57,23 +57,36 @@ def test_flujo_completo_registro_verificacion_login_y_recuperacion(app_and_event
     )
     assert log.status_code == 200
     log_body = log.json()
-    assert "token" in log_body and log_body["token"]
+    token = log_body["token"]
+    assert token
     assert log_body["user"]["username"] == "Jordanny_1"
 
-    # 5. Solicitud de recuperación de contraseña
+    # 5. Consulta de perfil autenticado
+    prof = client.get(f"{BASE}/profile", headers={"Authorization": f"Bearer {token}"})
+    assert prof.status_code == 200
+    assert prof.json() == {
+        "nombre_usuario": "Jordanny_1",
+        "partidas_jugadas": 0,
+        "partidas_ganadas": 0,
+        "puntos_totales": 0,
+    }
+    assert client.get(f"{BASE}/profile").status_code == 401
+
+    # 6. Solicitud de recuperación de contraseña
     forgot = client.post(f"{BASE}/forgot-password", json={"email": "jordanny@tec.ac.cr"})
     assert forgot.status_code == 200
     assert isinstance(events[-1], PasswordResetRequested)
     reset_code = events[-1].reset_token
 
-    # 6. Restablecer contraseña
+    # 7. Restablecer contraseña (revoca la sesión anterior)
     reset = client.post(
         f"{BASE}/reset-password",
         json={"code": reset_code, "new_password": "NuevaPassword99", "email": "jordanny@tec.ac.cr"},
     )
     assert reset.status_code == 200
+    assert client.get(f"{BASE}/profile", headers={"Authorization": f"Bearer {token}"}).status_code == 401
 
-    # 7. Login con la contraseña anterior falla (401) y con la nueva funciona (200)
+    # 8. Login con la contraseña anterior falla (401) y con la nueva funciona (200)
     assert (
         client.post(f"{BASE}/login", json={"email": "jordanny@tec.ac.cr", "password": "Password123"}).status_code
         == 401
@@ -99,4 +112,3 @@ def test_rutas_aceptan_alias_en_espanol(app_and_events):
 
     log = client.post(f"{BASE}/login", json={"correo": "es@tec.ac.cr", "clave": "Password123"})
     assert log.status_code == 200
-

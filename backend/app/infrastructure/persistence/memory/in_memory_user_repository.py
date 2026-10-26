@@ -1,3 +1,4 @@
+from app.domain.entities.player_profile import PlayerProfile
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.shared.errors import ConflictError
@@ -8,6 +9,7 @@ class InMemoryUserRepository(UserRepository):
 
     def __init__(self) -> None:
         self._users: dict[str, User] = {}
+        self._stats: dict[str, tuple[int, int, int]] = {}
 
     def find_by_id(self, entity_id: str) -> User | None:
         return self._users.get(entity_id)
@@ -29,3 +31,16 @@ class InMemoryUserRepository(UserRepository):
                 raise ConflictError("El nombre de usuario o el correo ya están registrados")
         self._users[entity.id] = entity
         return entity
+
+    def get_profile_stats(self, user_id: str) -> PlayerProfile | None:
+        user = self._users.get(user_id)
+        if user is None:
+            return None
+        played, won, points = self._stats.get(user_id, (0, 0, 0))
+        return PlayerProfile(
+            user_id=user.id,
+            username=user.username,
+            matches_played=played,
+            matches_won=won,
+            total_points=points,
+        )

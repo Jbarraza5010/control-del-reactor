@@ -3,6 +3,7 @@
 - US-004: Verificación de correo electrónico con código de un solo uso.
 - US-005: Inicio de sesión y emisión de token de sesión.
 - US-007: Recuperación y restablecimiento de contraseña con revocación de sesiones.
+- US-008: Consulta de perfil y estadísticas del jugador autenticado.
 """
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -14,6 +15,7 @@ import secrets
 from uuid import uuid4
 
 from app.domain.entities.auth_token import AuthToken
+from app.domain.entities.player_profile import PlayerProfile
 from app.domain.entities.user import User
 from app.domain.repositories.auth_token_repository import AuthTokenRepository
 from app.domain.repositories.user_repository import UserRepository
@@ -238,6 +240,31 @@ class AuthService:
         self._tokens.delete_by_user_and_purpose(user.id, "session")
         return user
 
+    def authenticate_session(self, raw_token: str) -> str:
+        clean_token = raw_token.strip()
+        if not clean_token:
+            raise UnauthorizedError("Falta el token de sesión")
+
+        now = self._clock()
+        digest = hash_token(clean_token)
+        stored_token = self._tokens.find_by_digest(digest)
+        if stored_token is None or stored_token.purpose != "session":
+            raise UnauthorizedError("Sesión inválida o expirada")
+        if stored_token.is_expired(now):
+            self._tokens.delete_by_digest(digest)
+            raise UnauthorizedError("Sesión inválida o expirada")
+        return stored_token.user_id
+
+    def get_profile(self, user_id: str) -> PlayerProfile:
+        profile = self._users.get_profile_stats(user_id)
+        if profile is None:
+            raise NotFoundError("Perfil de jugador no encontrado")
+        return profile
+
+    def get_profile_by_token(self, raw_token: str) -> PlayerProfile:
+        user_id = self.authenticate_session(raw_token)
+        return self.get_profile(user_id)
+
     def _new_unique_code(self) -> tuple[str, str]:
         for _ in range(50):
             code = self._code_generator()
@@ -272,4 +299,3 @@ class AuthService:
             raise ValidationAppError("La contraseña no puede superar 64 caracteres")
         if not (_LETTER_RE.search(password) and _DIGIT_RE.search(password)):
             raise ValidationAppError("La contraseña debe incluir al menos una letra y un número")
-

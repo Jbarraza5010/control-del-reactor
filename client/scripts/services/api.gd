@@ -7,6 +7,11 @@ var token: String = "" # Token de sesión tras iniciar sesión
 var usuario_actual: Dictionary = {} # Datos del jugador autenticado
 var correo_pendiente: String = "" # Correo registrado pendiente de verificar
 
+# Consulta de datos al servidor (GET JSON)
+func get_json(path: String) -> Dictionary:
+	var respuesta: Dictionary = await enviar(HTTPClient.METHOD_GET, path)
+	return respuesta
+
 # Envío de datos al servidor (POST JSON)
 func post_json(path: String, body: Dictionary) -> Dictionary:
 	var respuesta: Dictionary = await enviar(HTTPClient.METHOD_POST, path, body)
