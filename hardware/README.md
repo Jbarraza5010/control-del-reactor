@@ -81,11 +81,13 @@ Cada botón va entre el pin y **GND**. No hacen falta resistencias externas (se 
 
 | Botón | Código | Pin |
 |---|---|---|
-| Arriba | `UP` | D2 |
+| Arriba | `UP` | D7 |
 | Abajo | `DOWN` | D3 |
 | Izquierda | `LEFT` | D4 |
 | Derecha | `RIGHT` | D5 |
 | Acción | `ACTION` | D6 |
+
+> `UP` usa D7 y no D2: en la placa de pruebas el pin D2 resultó dañado (se leía siempre presionado).
 
 ### Cargar el sketch
 
@@ -100,6 +102,22 @@ cd hardware/firmware/arduino
 arduino-cli compile --fqbn arduino:avr:uno .
 arduino-cli upload  --fqbn arduino:avr:uno -p /dev/ttyACM0 .
 ```
+
+Con **PlatformIO** (VS Code o CLI): el proyecto está en `hardware/firmware` (`platformio.ini` apunta a `arduino/`, así el mismo sketch sirve para el Arduino IDE). Abrir esa carpeta en VS Code y usar Build (✓), Upload (→) y Serial Monitor (🔌), o desde la terminal:
+
+```
+cd hardware/firmware
+pio run -t upload
+pio device monitor
+```
+
+El entorno por defecto es `uno`. Para un Nano cambiar `board` en `platformio.ini` a `nanoatmega328new` (o `nanoatmega328` si es un clon con bootloader viejo y la carga falla con `stk500_getsync(): not in sync`).
+
+En Linux, antes de la primera carga:
+
+- El usuario debe estar en el grupo `dialout` (`sudo usermod -aG dialout $USER` y reiniciar la sesión; en Ubuntu puede requerir reiniciar el equipo).
+- Instalar las [reglas udev de PlatformIO](https://docs.platformio.org/en/latest/core/installation/udev-rules.html).
+- En Ubuntu, los clones con chip CH340 no aparecen en `/dev/ttyUSB0` si está instalado `brltty` (el lector braille se adueña del puerto; se ve en `sudo dmesg`). Solución: `sudo apt remove brltty`.
 
 ### Varios paneles
 
@@ -263,6 +281,6 @@ Se necesitan tres programas abiertos a la vez: el backend, el puente y el juego.
 | El puente dice "Panel sin vincular: ingresa el código…" | Falta escribir el código en el juego, o se escribió mal. |
 | El juego dice "Código de vinculación inválido o expirado" | El código venció (5 minutos) o el puente ya mostró uno más nuevo. Usar el último código del puente. |
 | El puente muestra un código nuevo después de reiniciar el backend | Normal: el backend guarda los paneles en memoria. Volver a vincular con el código nuevo. |
-| El puente no encuentra el Arduino | Revisar el cable USB, cerrar el Monitor Serie y, en Windows, instalar el driver CH340 si la placa es un clon. Indicar el puerto con `--port COMx` (se ve en el Administrador de dispositivos). |
+| El puente no encuentra el Arduino | En Ubuntu, desinstalar `brltty` (ver "Cargar el sketch"). Revisar el cable USB, cerrar el Monitor Serie y, en Windows, instalar el driver CH340 si la placa es un clon. Indicar el puerto con `--port COMx` (se ve en el Administrador de dispositivos). |
 | Ninguna línea llega al puente | La velocidad no coincide: el firmware y el puente deben usar 9600 baudios. |
 
