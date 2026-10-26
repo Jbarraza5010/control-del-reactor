@@ -1,0 +1,110 @@
+[gd_scene format=3 uid="uid://ci0noquvdqlbi"]
+
+[ext_resource type="Script" uid="uid://dsf3dgrdq4sic" path="res://scripts/HUD/registro.gd" id="1_701u5"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_klvag"]
+font_size = 20
+
+[sub_resource type="LabelSettings" id="LabelSettings_cr1y8"]
+font_color = Color(0.8, 0, 0, 1)
+
+[node name="Registro" type="Control" unique_id=1924561105]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_701u5")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1113863558]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4509804, 0.81960785, 0.65882355, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=311119976]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="CenterContainer" unique_id=658411575]
+custom_minimum_size = Vector2(600, 400)
+layout_mode = 2
+color = Color(0, 0, 0, 0.6862745)
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/ColorRect" unique_id=1506158377]
+propagate_maximum_size = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/ColorRect/MarginContainer" unique_id=2034939488]
+layout_mode = 2
+
+[node name="Titulo" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1786059993]
+layout_mode = 2
+text = "Registro"
+label_settings = SubResource("LabelSettings_klvag")
+horizontal_alignment = 1
+
+[node name="TituloUsuario" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1786059994]
+layout_mode = 2
+text = "Nombre de usuario"
+
+[node name="CampoUsuario" type="LineEdit" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=999793590]
+layout_mode = 2
+placeholder_text = "Digite su nombre de usuario"
+
+[node name="TituloCorreo" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1795856820]
+layout_mode = 2
+text = "Correo electronico"
+
+[node name="CampoCorreo" type="LineEdit" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=999793593]
+layout_mode = 2
+placeholder_text = "Digite su correo electrónico"
+
+[node name="TituloContrasena" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=191650836]
+layout_mode = 2
+text = "Contraseña"
+
+[node name="CampoContrasena" type="LineEdit" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1428100937]
+layout_mode = 2
+placeholder_text = "Digite su contraseña"
+secret = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1842642052]
+layout_mode = 2
+
+[node name="BotonVolver" type="Button" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer" unique_id=493396154]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Volver"
+
+[node name="BotonRegistrar" type="Button" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer" unique_id=348863274]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Registrarse"
+
+[node name="BotonIrLogin" type="Button" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=423926991]
+layout_mode = 2
+text = "¿Ya tienes cuenta? Inicia sesión"
+
+[node name="LabelMensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1102229563]
+layout_mode = 2
+size_flags_vertical = 6
+label_settings = SubResource("LabelSettings_cr1y8")
+autowrap_mode = 1
