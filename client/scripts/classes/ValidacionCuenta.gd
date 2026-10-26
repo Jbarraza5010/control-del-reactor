@@ -65,3 +65,8 @@ static func validar_login(correo: String, contrasena: String) -> String:
 		return "Ingrese su correo y contraseña."
 	return ""
 	
+# Validación de código de un solo uso:
+static func validar_codigo(codigo: String) -> String:
+	if codigo.is_empty():
+		return "Ingrese el código de un solo uso"
+	return ""

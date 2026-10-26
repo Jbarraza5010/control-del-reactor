@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://b2573bx0ab7hn"]
 
+[ext_resource type="Script" uid="uid://bcgfjts4tbr3u" path="res://scripts/common/dato_estadistica.gd" id="1_84klj"]
+
 [sub_resource type="LabelSettings" id="LabelSettings_8w0r3"]
 font_size = 20
 
@@ -14,6 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 color = Color(0, 0, 0, 0.6862745)
+script = ExtResource("1_84klj")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1068666006]
 layout_mode = 1

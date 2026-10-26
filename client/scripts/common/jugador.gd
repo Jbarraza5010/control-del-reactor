@@ -3,20 +3,16 @@ extends CharacterBody2D
 
 @export var velocidad: float = 100.0
 
-# Arrastra aquí, desde el Inspector, el nodo TileMapLayer del mapa.
 @export var mapa: TileMapLayer
 
 # Distancia máxima para interactuar, medida en CELDAS (no en píxeles).
-# 1 = la celda donde estoy parado y las 8 que la rodean.
+# 1 indica las celdas alrededor
 @export var alcance_en_celdas: int = 1
 
-# Diccionario: "si el tile está en estas coordenadas del atlas, cámbialo
-# a estas otras". Las coordenadas (columna, fila) las ves en el editor de
-# TileSet, en la imagen del atlas. AJUSTA estos números a tu tileset.
-# Ejemplo: palanca apagada (3, 0) <-> palanca encendida (4, 0).
+# Cambio de estados en cada tile
 var transiciones: Dictionary = {
-	Vector2i(3, 0): Vector2i(4, 0),
-	Vector2i(4, 0): Vector2i(3, 0),
+	Vector2i(1, 1): Vector2i(1, 0),
+	Vector2i(1, 0): Vector2i(1, 1),
 }
 
 
@@ -28,8 +24,6 @@ func _physics_process(_delta: float) -> void:
 	move_and_slide()
 
 
-# _unhandled_input se llama solo cuando ocurre un evento de entrada
-# (una tecla, un botón...). Así no revisamos el botón 60 veces por segundo.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("accion"):
 		_interactuar()

@@ -5,12 +5,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 from app.application.ports.database_health import DatabaseHealth
+from app.application.services.register_mail_listeners import register_mail_listeners
 from app.container import Container
 from app.domain.entities.user import User
 from app.infrastructure.mail.console_mailer import ConsoleMailer
 from app.infrastructure.persistence.memory.in_memory_user_repository import InMemoryUserRepository
 from app.infrastructure.persistence.sql.models import Base
 from app.infrastructure.persistence.sql.session import create_session_factory
+from app.infrastructure.persistence.sql.sql_auth_token_repository import SqlAuthTokenRepository
 from app.infrastructure.persistence.sql.sql_user_repository import SqlUserRepository
 from app.shared.events import EventBus
 
@@ -25,9 +27,12 @@ class FakeDatabaseHealth(DatabaseHealth):
 
 
 def make_container(db_up: bool = True) -> Container:
+    bus = EventBus()
+    mailer = ConsoleMailer()
+    register_mail_listeners(bus, mailer)
     return Container(
-        event_bus=EventBus(),
-        mailer=ConsoleMailer(),
+        event_bus=bus,
+        mailer=mailer,
         user_repository=InMemoryUserRepository(),
         database_health=FakeDatabaseHealth(db_up),
     )
@@ -47,8 +52,18 @@ def make_user(**overrides) -> User:
 
 
 @pytest.fixture
-def sql_repository():
-    """Repositorio SQL real sobre SQLite en memoria (misma lógica que con PostgreSQL)."""
+def sql_session_factory():
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
-    return SqlUserRepository(create_session_factory(engine))
+    return create_session_factory(engine)
+
+
+@pytest.fixture
+def sql_repository(sql_session_factory):
+    """Repositorio SQL real sobre SQLite en memoria (misma lógica que con PostgreSQL)."""
+    return SqlUserRepository(sql_session_factory)
+
+
+@pytest.fixture
+def sql_token_repository(sql_session_factory):
+    return SqlAuthTokenRepository(sql_session_factory)

@@ -1,38 +1,244 @@
-"""Contrato inicial de la API de cuentas (Sprint 2).
-
-Todos los endpoints responden 501 hasta que Moisés los implemente:
-  US-001/002/003 -> register      US-004 -> verify-email
-  US-005 -> login                 US-007 -> forgot-password / reset-password
-Al implementarlos: declarar el cuerpo con modelos pydantic, llamar a un servicio de
-application/ y lanzar subclases de AppError. El contrato se ve en http://localhost:8000/docs
+"""Rutas de la API de cuentas (Sprint 2):
+- US-001/002/003 -> POST /api/v1/auth/register
+- US-004         -> POST /api/v1/auth/verify-email
+- US-005         -> POST /api/v1/auth/login
+- US-007         -> POST /api/v1/auth/forgot-password y POST /api/v1/auth/reset-password
+- US-008         -> GET  /api/v1/auth/profile
 """
-from fastapi import APIRouter
+from typing import Annotated
 
-from app.shared.errors import NotImplementedAppError
+from fastapi import APIRouter, Depends, Header
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+
+from app.container import Container
+from app.domain.entities.user import User
+from app.presentation.api.dependencies import get_container
+from app.shared.errors import UnauthorizedError
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
-@router.post("/register", summary="Registrar cuenta (US-001, US-002, US-003)")
-def register() -> None:
-    raise NotImplementedAppError()
+class _AuthModel(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
 
 
-@router.post("/verify-email", summary="Verificar correo (US-004)")
-def verify_email() -> None:
-    raise NotImplementedAppError()
+class RegisterRequest(_AuthModel):
+    username: str = Field(
+        validation_alias=AliasChoices("username", "usuario"),
+        examples=["ReactorPlayer"],
+    )
+    email: str = Field(
+        validation_alias=AliasChoices("email", "correo"),
+        examples=["jugador@tec.ac.cr"],
+    )
+    password: str = Field(
+        validation_alias=AliasChoices("password", "clave", "contrasena"),
+        examples=["Reactor1234"],
+    )
 
 
-@router.post("/login", summary="Iniciar sesión (US-005)")
-def login() -> None:
-    raise NotImplementedAppError()
+class VerifyEmailRequest(_AuthModel):
+    code: str = Field(
+        validation_alias=AliasChoices("code", "token", "codigo"),
+        examples=["123456"],
+    )
+    email: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("email", "correo"),
+        examples=["jugador@tec.ac.cr"],
+    )
 
 
-@router.post("/forgot-password", summary="Solicitar recuperación de contraseña (US-007)")
-def forgot_password() -> None:
-    raise NotImplementedAppError()
+class LoginRequest(_AuthModel):
+    email: str = Field(
+        validation_alias=AliasChoices("email", "correo"),
+        examples=["jugador@tec.ac.cr"],
+    )
+    password: str = Field(
+        validation_alias=AliasChoices("password", "clave", "contrasena"),
+        examples=["Reactor1234"],
+    )
 
 
-@router.post("/reset-password", summary="Restablecer contraseña (US-007)")
-def reset_password() -> None:
-    raise NotImplementedAppError()
+class ForgotPasswordRequest(_AuthModel):
+    email: str = Field(
+        validation_alias=AliasChoices("email", "correo"),
+        examples=["jugador@tec.ac.cr"],
+    )
+
+
+class ResetPasswordRequest(_AuthModel):
+    code: str = Field(
+        validation_alias=AliasChoices("code", "token", "codigo"),
+        examples=["123456"],
+    )
+    new_password: str = Field(
+        validation_alias=AliasChoices(
+            "new_password",
+            "newPassword",
+            "password",
+            "clave",
+            "contrasena",
+            "nueva_contrasena",
+            "nueva_clave",
+        ),
+        examples=["NuevaClave123"],
+    )
+    email: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("email", "correo"),
+        examples=["jugador@tec.ac.cr"],
+    )
+
+
+class UserResponse(_AuthModel):
+    id: str
+    username: str
+    email: str
+    status: str
+    message: str
+
+
+class UserSummary(_AuthModel):
+    id: str
+    username: str
+    email: str
+    status: str
+
+
+class LoginResponse(_AuthModel):
+    token: str
+    user: UserSummary
+    message: str
+
+
+class MessageResponse(_AuthModel):
+    message: str
+
+
+class ProfileResponse(_AuthModel):
+    nombre_usuario: str
+    partidas_jugadas: int
+    partidas_ganadas: int
+    puntos_totales: int
+
+
+def _user_response(user: User, message: str) -> UserResponse:
+    return UserResponse(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        status=user.status,
+        message=message,
+    )
+
+
+def _extract_bearer_token(authorization: str | None) -> str:
+    if not authorization:
+        raise UnauthorizedError("Falta el token de sesión")
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise UnauthorizedError("Usa el encabezado 'Authorization: Bearer <token>'")
+    return token.strip()
+
+
+@router.post(
+    "/register",
+    status_code=201,
+    response_model=UserResponse,
+    summary="Registrar cuenta (US-001, US-002, US-003)",
+)
+def register(
+    body: RegisterRequest,
+    container: Container = Depends(get_container),
+) -> UserResponse:
+    user = container.auth_service.register(body.username, body.email, body.password)
+    return _user_response(
+        user,
+        "Cuenta creada exitosamente. Revisa tu correo para obtener el código de verificación.",
+    )
+
+
+@router.post(
+    "/verify-email",
+    status_code=200,
+    response_model=UserResponse,
+    summary="Verificar correo (US-004)",
+)
+def verify_email(
+    body: VerifyEmailRequest,
+    container: Container = Depends(get_container),
+) -> UserResponse:
+    user = container.auth_service.verify_email(body.code, body.email)
+    return _user_response(user, "Se ha validado el correo exitosamente.")
+
+
+@router.post(
+    "/login",
+    status_code=200,
+    response_model=LoginResponse,
+    summary="Iniciar sesión (US-005)",
+)
+def login(
+    body: LoginRequest,
+    container: Container = Depends(get_container),
+) -> LoginResponse:
+    result = container.auth_service.login(body.email, body.password)
+    return LoginResponse(
+        token=result.token,
+        user=UserSummary(
+            id=result.user.id,
+            username=result.user.username,
+            email=result.user.email,
+            status=result.user.status,
+        ),
+        message="Inicio de sesión exitoso.",
+    )
+
+
+@router.post(
+    "/forgot-password",
+    status_code=200,
+    response_model=MessageResponse,
+    summary="Solicitar recuperación de contraseña (US-007)",
+)
+def forgot_password(
+    body: ForgotPasswordRequest,
+    container: Container = Depends(get_container),
+) -> MessageResponse:
+    container.auth_service.forgot_password(body.email)
+    return MessageResponse(message="Se ha enviado un código de un solo uso al correo.")
+
+
+@router.post(
+    "/reset-password",
+    status_code=200,
+    response_model=MessageResponse,
+    summary="Restablecer contraseña (US-007)",
+)
+def reset_password(
+    body: ResetPasswordRequest,
+    container: Container = Depends(get_container),
+) -> MessageResponse:
+    container.auth_service.reset_password(body.code, body.new_password, body.email)
+    return MessageResponse(message="Contraseña actualizada exitosamente.")
+
+
+@router.get(
+    "/profile",
+    status_code=200,
+    response_model=ProfileResponse,
+    summary="Consultar perfil y estadísticas del jugador autenticado (US-008)",
+)
+def get_profile(
+    authorization: Annotated[str | None, Header()] = None,
+    container: Container = Depends(get_container),
+) -> ProfileResponse:
+    token = _extract_bearer_token(authorization)
+    profile = container.auth_service.get_profile_by_token(token)
+    return ProfileResponse(
+        nombre_usuario=profile.username,
+        partidas_jugadas=profile.matches_played,
+        partidas_ganadas=profile.matches_won,
+        puntos_totales=profile.total_points,
+    )
