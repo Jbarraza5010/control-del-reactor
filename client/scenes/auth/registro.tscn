@@ -85,3 +85,4 @@ text = "¿Ya tienes cuenta? Inicia sesión aquí"
 
 [node name="Mensaje" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1533042138]
 layout_mode = 2
+

@@ -66,3 +66,4 @@ text = "Validar"
 
 [node name="Mensaje" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1402821149]
 layout_mode = 2
+
