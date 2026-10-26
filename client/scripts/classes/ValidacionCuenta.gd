@@ -59,8 +59,9 @@ static func validar_contrasena(contrasena: String) -> String:
 	return ""
 
 # Validación del login
-static func validar_login(identificador: String, contrasena: String) -> String:
-	if identificador.is_empty() or contrasena.is_empty():
+static func validar_login(correo: String, contrasena: String) -> String:
+	# Validar si el campo de correo o contrasena no estan vacios
+	if correo.is_empty() or contrasena.is_empty():
 		return "Ingrese su correo y contraseña."
 	return ""
 	
