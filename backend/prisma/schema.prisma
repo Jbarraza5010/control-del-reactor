@@ -1,0 +1,22 @@
+// Esquema Prisma. Lo EXTIENDE Moisés (jugadores, partidas, récords).
+// Aquí solo va un modelo mínimo de ejemplo alineado con la entidad User del dominio.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  status       String   @default("PENDIENTE_VERIFICACION")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("usuarios")
+}

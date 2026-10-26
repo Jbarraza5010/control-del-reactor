@@ -1,0 +1,23 @@
+backend/
+├── app/
+│   ├── api/                  # Capa de Presentación / Endpoints (Controllers)
+│   │   ├── __init__.py
+│   │   └── v1/
+│   │       ├── __init__.py
+│   │       └── auth.py       # Endpoints de autenticación
+│   ├── core/                 # Configuración global y excepciones
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   └── exceptions.py     # Manejo global de errores
+│   ├── domain/               # Capa de Dominio (Modelos de entidad y contratos)
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   │   └── repositories.py   # Interfaces Abstractas
+│   ├── infrastructure/       # Capa de Persistencia e Infraestructura
+│   │   ├── __init__.py
+│   │   ├── database.py
+│   │   └── repositories.py   # Implementación concreta de DB (PostgreSQL)
+│   └── main.py               # Punto de entrada de la aplicación
+├── Dockerfile
+├── docker-compose.yml
+└── requirements.txt

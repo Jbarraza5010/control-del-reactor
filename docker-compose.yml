@@ -1,0 +1,56 @@
+# Control del Reactor - entorno local completo.
+# Uso:  docker compose up --build
+# Funciona desde un clon limpio: todos los valores tienen un default.
+name: control-del-reactor
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: reactor-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-reactor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reactor}
+      POSTGRES_DB: ${POSTGRES_DB:-reactor}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    container_name: reactor-backend
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-reactor}:${POSTGRES_PASSWORD:-reactor}@db:5432/${POSTGRES_DB:-reactor}
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-console}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-Control del Reactor <no-reply@reactor.local>}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Visor web de la base de datos (solo desarrollo): http://localhost:8080
+  adminer:
+    image: adminer:4
+    container_name: reactor-adminer
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  pgdata:
