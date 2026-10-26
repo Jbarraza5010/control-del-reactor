@@ -8,33 +8,35 @@ extends Control
 @onready var boton_ir_registro: Button = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/BotonIrRegistro
 @onready var label_mensaje: Label = $CenterContainer/ColorRect/MarginContainer/VBoxContainer/LabelMensaje
 
-var MOCKING := true
-
 func _ready() -> void:
 	boton_ir_recuperacion.pressed.connect(func(): Navegacion.ir_a("auth/recuperacion"))
 	boton_volver.pressed.connect(func(): Navegacion.ir_a("entrada"))
 	boton_login.pressed.connect(_al_iniciar_sesion)
 	boton_ir_registro.pressed.connect(func(): Navegacion.ir_a("auth/registro"))
-	
+
 func _al_iniciar_sesion() -> void:
-	# Validaciones de campos no vacíos
-	var correo := campo_correo.text.strip_edges()
-	var contrasena := campo_contrasena.text
-	
-	if ValidacionCuenta.validar_login(correo, contrasena) != "":
-		label_mensaje.text = ValidacionCuenta.validar_login(correo, contrasena)
-	
-	
-	
-	if MOCKING:
-		# Asuma las credenciales:
-		# correo: test@testing.com
-		# contraseña: 12345678
-		if correo == "test@testing.com" and  contrasena == "12345678":
-			label_mensaje.text = "Inicio de sesión exitoso. Redirigiendo"
-			await get_tree().create_timer(0.5).timeout
-			Navegacion.ir_a("mainmenu")
-		else:
-			label_mensaje.text = "Correo o contraseña incorrecta. Intente otra vez"
-			
-		
+	var correo: String = campo_correo.text.strip_edges()
+	var contrasena: String = campo_contrasena.text
+
+	var err_login: String = ValidacionCuenta.validar_login(correo, contrasena)
+	if err_login != "":
+		label_mensaje.text = err_login
+		return
+
+	boton_login.disabled = true
+	var response: Dictionary = await Api.post_json("/api/v1/auth/login", {
+		"email": correo,
+		"password": contrasena,
+	})
+	boton_login.disabled = false
+
+	if response.get("ok", false):
+		var data: Dictionary = response.get("data", {})
+		Api.token = str(data.get("token", ""))
+		var user_data: Variant = data.get("user", {})
+		Api.usuario_actual = user_data if user_data is Dictionary else {}
+		label_mensaje.text = "Inicio de sesión exitoso. Redirigiendo"
+		await get_tree().create_timer(0.5).timeout
+		Navegacion.ir_a("mainmenu")
+	else:
+		label_mensaje.text = Api.mensaje_error(response, "Correo o contraseña incorrecta. Intente otra vez")

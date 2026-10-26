@@ -35,7 +35,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="CenterContainer" unique_id=1386143226]
-custom_minimum_size = Vector2(600, 300)
+custom_minimum_size = Vector2(600, 380)
 layout_mode = 2
 color = Color(0, 0, 0, 0.6862745)
 
@@ -85,6 +85,15 @@ text = "Código"
 layout_mode = 2
 placeholder_text = "Digite el código enviado al correo de la cuenta"
 
+[node name="TituloContrasena" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1364411661]
+layout_mode = 2
+text = "Nueva contraseña"
+
+[node name="CampoContrasena" type="LineEdit" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1778178962]
+layout_mode = 2
+placeholder_text = "Digite su nueva contraseña"
+secret = true
+
 [node name="HBoxContainer2" type="HBoxContainer" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=447760337]
 layout_mode = 2
 
@@ -96,7 +105,7 @@ text = "Volver"
 [node name="BotonValidar" type="Button" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1869402955]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Enviar contraseña al correo"
+text = "Restablecer contraseña"
 
 [node name="LabelMensaje" type="Label" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=696970754]
 layout_mode = 2

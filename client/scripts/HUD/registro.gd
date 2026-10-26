@@ -15,34 +15,37 @@ func _ready() -> void:
 
 func _al_registrar() -> void:
 	# Validaciones del frontend
-	var usuario := campo_usuario.text.strip_edges()
-	var correo := campo_correo.text.strip_edges()
-	var contrasena := campo_contrasena.text
-	
+	var usuario: String = campo_usuario.text.strip_edges()
+	var correo: String = campo_correo.text.strip_edges()
+	var contrasena: String = campo_contrasena.text
+
 	# Validar nombre de usuario
-	if ValidacionCuenta.validar_usuario(usuario) != "":
-		label_mensaje.text = ValidacionCuenta.validar_usuario(usuario)
+	var err_usuario: String = ValidacionCuenta.validar_usuario(usuario)
+	if err_usuario != "":
+		label_mensaje.text = err_usuario
 		return
 	# Validar correo electronico
-	if ValidacionCuenta.validar_correo(correo) != "":
-		label_mensaje.text = ValidacionCuenta.validar_correo(correo)
+	var err_correo: String = ValidacionCuenta.validar_correo(correo)
+	if err_correo != "":
+		label_mensaje.text = err_correo
 		return
 	# Validar contrasena
-	if ValidacionCuenta.validar_contrasena(contrasena) != "":
-		label_mensaje.text = ValidacionCuenta.validar_contrasena(contrasena)
+	var err_contrasena: String = ValidacionCuenta.validar_contrasena(contrasena)
+	if err_contrasena != "":
+		label_mensaje.text = err_contrasena
 		return
-	
-	# Envio de datos
-	
-	boton_registrar.disabled = true #Deshabilitar boton de registro hasta que se haga una validacion
-	var response = await Api.enviar(HTTPClient.METHOD_POST, "/auth/registro", {
-		"usuario": campo_usuario.text.strip_edges(),
-		"correo": campo_correo.text.strip_edges(),
-		"clave": campo_contrasena.text
+
+	# Envío de datos al backend
+	boton_registrar.disabled = true
+	var response: Dictionary = await Api.post_json("/api/v1/auth/register", {
+		"username": usuario,
+		"email": correo,
+		"password": contrasena,
 	})
 	boton_registrar.disabled = false
-	
-	if response.ok:
+
+	if response.get("ok", false):
+		Api.correo_pendiente = correo
 		Navegacion.ir_a("auth/verificacion")
 	else:
-		label_mensaje.text = response.datos.get("mensaje", "Ocurrio un error.")
+		label_mensaje.text = Api.mensaje_error(response, "Ocurrió un error al registrar la cuenta.")

@@ -31,8 +31,8 @@ const ACCIONES := {
 }
 
 @export var backend_url: String = "http://localhost:8000"
-## TEMPORAL mientras el login no entregue tokens: el backend toma este valor como id del jugador.
-## Si existe un autoload "Sesion" con una propiedad "token", se usa ese en su lugar.
+## Si existe un autoload "Sesion" o "Api" con un "token" activo tras iniciar sesión, se usa ese;
+## de lo contrario cae al token de desarrollo.
 @export var token_desarrollo: String = "jugador-dev"
 @export var segundos_entre_reintentos: float = 2.0
 
@@ -56,9 +56,10 @@ func _exit_tree() -> void:
 
 
 func token() -> String:
-	var sesion := get_node_or_null("/root/Sesion")
-	if sesion != null and "token" in sesion and str(sesion.get("token")) != "":
-		return str(sesion.get("token"))
+	for ruta in ["/root/Sesion", "/root/Api"]:
+		var nodo := get_node_or_null(ruta)
+		if nodo != null and "token" in nodo and str(nodo.get("token")) != "":
+			return str(nodo.get("token"))
 	return token_desarrollo
 
 

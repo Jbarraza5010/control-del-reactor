@@ -26,10 +26,10 @@ def test_health_db_503_si_la_bd_no_responde():
     assert res.json()["database"] == "down"
 
 
-def test_endpoints_de_auth_pendientes_responden_501():
+def test_endpoints_de_auth_sin_cuerpo_responden_400():
     res = client().post("/api/v1/auth/login")
-    assert res.status_code == 501
-    assert res.json()["error"]["code"] == "NOT_IMPLEMENTED"
+    assert res.status_code == 400
+    assert res.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
 def test_ruta_inexistente_responde_404_con_formato_de_error():
