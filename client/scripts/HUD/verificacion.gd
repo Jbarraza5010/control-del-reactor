@@ -22,3 +22,4 @@ func _al_validar() -> void:
 			Navegacion.ir_a("entrada")
 		else:
 			label_mensaje.text = "No se ha validado el correo: Intente otra vez"
+		
