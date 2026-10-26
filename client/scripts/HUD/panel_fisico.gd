@@ -70,3 +70,4 @@ func _vincular(codigo: String) -> void:
 
 func _mostrar(mensaje: String) -> void:
 	indicacion.text = mensaje
+
