@@ -18,7 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Navegacion="*uid://cn2502j03bbtc"
-Api="*uid://bimncqa4rcqlj"
+Api="*uid://cv3pxla8hlhfy"
 
 [display]
 

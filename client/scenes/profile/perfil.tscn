@@ -61,12 +61,15 @@ size_flags_stretch_ratio = 2.0
 
 [node name="DatoEstadistica" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer" unique_id=741568416 instance=ExtResource("2_264j0")]
 layout_mode = 2
+titulo = "Partidas Jugadas"
 
 [node name="DatoEstadistica2" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer" unique_id=449457873 instance=ExtResource("2_264j0")]
 layout_mode = 2
+titulo = "Partidas Ganadas"
 
 [node name="DatoEstadistica3" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1607371316 instance=ExtResource("2_264j0")]
 layout_mode = 2
+titulo = "Total de puntos"
 
 [node name="BotonVolver" type="Button" parent="CenterContainer/ColorRect/MarginContainer/VBoxContainer" unique_id=1860025606]
 layout_mode = 2
