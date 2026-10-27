@@ -33,7 +33,6 @@ position = Vector2(-44, -4)
 mapa = NodePath("../TileMapLayer")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1212465440]
-visible = false
 follow_viewport_scale = 0.001
 
 [node name="TituloIndicación" type="Label" parent="CanvasLayer" unique_id=26652051]
