@@ -1,66 +1,79 @@
-# Vista lógica — Sprint 2
+# Vista lógica — Sprint 3
 
-Actualiza la vista lógica de la ERS (sección 7.1) con lo que realmente se construye en el Sprint 2:
-el backend de cuentas en Python organizado en capas. Los elementos con línea punteada son del roadmap (Sprint 3 en adelante).
+Actualiza la vista del Sprint 2 con el **motor de partida** (cliente Godot, ejecutado por el anfitrión) y el
+backend con sus rutas de panel físico. Las líneas punteadas son del roadmap (Sprint 4 en adelante).
 
 ```mermaid
 flowchart TB
-  subgraph CLI["Capa de presentación (clientes)"]
-    GODOT["Cliente Godot (GDScript, escritorio / móvil)"]
-    SIM["Simulador del panel de 5 botones"]
+  subgraph CLI["Capa de presentación (clientes Godot: escritorio y Android)"]
+    UI["Escenas y HUD<br/>(arena, tabla de posiciones, ceremonia)"]
+    RED["Red del juego (ENet)<br/>lobby, entradas e instantáneas"]
+    PANEL["PanelHardware<br/>(botones del panel físico)"]
+  end
+
+  subgraph MOTOR["Motor de partida (client/scripts/juego) - solo corre en el anfitrión"]
+    PART["Partida<br/>(coordinador)"]
+    JUG["ModeloJugador + State<br/>(normal, aturdido, escudado, eliminado)"]
+    GUA["Guardian + Strategy<br/>(patrulla, persecución) + FabricaGuardianes"]
+    OBS["Obstáculos<br/>(barrera móvil, puerta, trampa)"]
+    EVT["Eventos especiales + FabricaEventos<br/>+ ProgramadorEventos"]
+    MARC["Marcador + TablaPosiciones<br/>(Observer)"]
   end
 
   subgraph API["Backend - presentation/api (FastAPI)"]
-    ROUTES["Rutas<br/>(/health, /api/v1/auth)"]
-    ERRH["Manejadores de error<br/>(AppError a JSON)"]
+    ROUTES["Rutas<br/>(/health, /api/v1/auth, /api/v1/hardware)"]
+    HUB["hardware_hub (WebSocket)"]
   end
 
   subgraph APP["Backend - application"]
-    SVC["Servicios de cuentas<br/>(Moisés: registro, verificación, login, recuperación)"]
-    PORTS["Puertos<br/>(Mailer, DatabaseHealth)"]
-    LISTEN["register_mail_listeners"]
+    SVC["Servicios<br/>(cuentas, panel físico)"]
+    PORTS["Puertos<br/>(Mailer, DatabaseHealth, PlayerIdentity)"]
   end
 
   subgraph DOM["Backend - domain"]
-    ENT["Entidades<br/>(User)"]
-    REPO["Contratos de repositorio<br/>(UserRepository)"]
+    ENT["Entidades<br/>(User, AuthToken, HardwarePanel)"]
+    REPO["Contratos de repositorio"]
   end
 
   subgraph INFRA["Backend - infrastructure"]
-    SQL["SqlUserRepository (SQLAlchemy)"]
-    MEM["InMemoryUserRepository (pruebas)"]
-    MAIL["MailerFactory -> ConsoleMailer / SmtpMailer"]
+    SQL["Repositorios SQLAlchemy"]
+    MEM["Repositorios en memoria (pruebas)"]
+    MAIL["MailerFactory"]
   end
 
-  subgraph SHARED["Backend - shared"]
-    BUS["EventBus (Observer)"]
-    ERR["AppError y subclases"]
-  end
-
+  BUS["EventBus (Observer)"]
   DB[("PostgreSQL")]
 
-  GODOT -->|"HTTP/JSON"| ROUTES
-  SIM -.->|"Sprint 3: protocolo de hardware"| ROUTES
-  ROUTES --> ERRH
+  UI --> PART
+  RED --> PART
+  PANEL --> RED
+  PART --> JUG
+  PART --> GUA
+  PART --> OBS
+  PART --> EVT
+  PART --> MARC
+  MARC -->|"señales"| UI
+
+  PANEL -->|"HTTP + WebSocket"| ROUTES
+  PART -->|"HTTP: resultado de la partida"| ROUTES
   ROUTES --> SVC
+  ROUTES --> HUB
   SVC --> REPO
   SVC --> ENT
   SVC --> BUS
-  BUS --> LISTEN
-  LISTEN --> PORTS
+  BUS --> HUB
   SQL -.->|"implementa"| REPO
   MEM -.->|"implementa"| REPO
   MAIL -.->|"implementa"| PORTS
   SQL --> DB
-  SVC -.-> ERR
 
-  MOTOR["Motor de partida (Godot host, LAN)"]:::future
-  REDIS["Redis / MQTT / WebSocket"]:::future
-  MOTOR -.-> API
-  REDIS -.-> API
+  CLOUD["Despliegue en la nube / servidor dedicado"]:::future
+  RED -.-> CLOUD
 
   classDef future stroke-dasharray: 5 5,fill:#f4f4f4,color:#555;
 ```
 
-**Regla de dependencia:** `presentation → application → domain`; `infrastructure` implementa las interfaces de `domain` y `application`.
-`domain` no importa FastAPI ni SQLAlchemy.
+**Reglas de dependencia**
+
+- Backend: `presentation → application → domain`; `infrastructure` implementa las interfaces. El dominio no importa FastAPI ni SQLAlchemy.
+- Cliente: las escenas dependen del motor y nunca al revés. El motor no usa nodos de Godot, solo `RefCounted` y señales, por eso se prueba sin abrir el juego.
